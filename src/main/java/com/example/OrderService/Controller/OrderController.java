@@ -1,6 +1,7 @@
 package com.example.OrderService.Controller;
 import java.util.List;
 import com.example.OrderService.DTO.OrderRequest;
+import com.example.OrderService.DTO.OrderResponse;
 import com.example.OrderService.OrderServiceApplication;
 import com.example.OrderService.Service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +23,15 @@ public class OrderController {
         return "Order Created Successfully";
     }
 
-//    @DeleteMapping
-//    @ResponseStatus(HttpStatus.OK)
-//    public void deleteAllOrder() {
-//        this.orderService.deleteAllOrder();
-//    }
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public OrderResponse getOrder(@PathVariable Long id) {
+        return this.orderService.getOrder(id);
+    }
+
+    @DeleteMapping
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteAllOrder() {
+        this.orderService.deleteAllOrder();
+    }
 }
