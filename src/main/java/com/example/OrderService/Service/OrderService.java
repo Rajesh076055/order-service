@@ -1,6 +1,8 @@
 package com.example.OrderService.Service;
 
 
+import com.example.OrderService.Config.WebClientConfig;
+import com.example.OrderService.DTO.InventoryResponse;
 import com.example.OrderService.DTO.OrderLineItemsDTO;
 import com.example.OrderService.DTO.OrderRequest;
 import com.example.OrderService.DTO.OrderResponse;
@@ -13,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,6 +27,8 @@ import java.util.UUID;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+
+    private final WebClient webClient;
 
     public void placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
@@ -35,7 +41,20 @@ public class OrderService {
 
 //        Method to check if the item is in the inventory
         order.setOrderListItems(orderListItem);
-        this.orderRepository.save(order);
+
+        List<String> skuCodes = order.getOrderListItems().stream()
+                .map(OrderListItem::getSkuCode).toList();
+
+        InventoryResponse[] result = this.inventoryValidation(skuCodes);
+
+        assert result != null;
+        boolean isInStock = Arrays.stream(result).allMatch(InventoryResponse::getIsInStock);
+
+        if (isInStock) {
+            this.orderRepository.save(order);
+        } else {
+            throw new IllegalArgumentException("Product not in the stock");
+        }
     }
 
 
@@ -75,6 +94,15 @@ public class OrderService {
         orderLineItemsDTO.setSkuCode(orderListItem.getSkuCode());
 
         return orderLineItemsDTO;
+    }
+
+    private InventoryResponse[] inventoryValidation(List<String> skuCodes) {
+        return webClient.get()
+                .uri("http://inventory-service:8082/api/v1/inventory",
+                        uriBuilder -> uriBuilder.queryParam("skuCode", skuCodes).build())
+                .retrieve()
+                .bodyToMono(InventoryResponse[].class)
+                .block();
     }
 
 }
