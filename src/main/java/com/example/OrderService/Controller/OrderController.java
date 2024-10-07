@@ -7,6 +7,7 @@ import com.example.OrderService.Service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,10 +18,14 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public String createOrder(@RequestBody OrderRequest orderRequest) {
-        this.orderService.placeOrder(orderRequest);
-        return "Order Created Successfully";
+    public ResponseEntity<String> createOrder(@RequestBody OrderRequest orderRequest) {
+        try {
+            this.orderService.placeOrder(orderRequest);
+            return new ResponseEntity<>("Order Created Successfully", HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("Item not in the stock", HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
     }
 
     @GetMapping("/{id}")

@@ -98,7 +98,7 @@ public class OrderService {
 
     private InventoryResponse[] inventoryValidation(List<String> skuCodes) {
         return webClient.get()
-                .uri("http://inventory-service:8082/api/v1/inventory",
+                .uri("http://localhost:8082/api/v1/inventory",
                         uriBuilder -> uriBuilder.queryParam("skuCode", skuCodes).build())
                 .retrieve()
                 .bodyToMono(InventoryResponse[].class)
