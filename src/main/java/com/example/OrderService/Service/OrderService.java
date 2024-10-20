@@ -30,7 +30,7 @@ public class OrderService {
 
     private final WebClient webClient;
 
-    public void placeOrder(OrderRequest orderRequest) {
+    public String placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
         order.setOrderNumber(UUID.randomUUID().toString());
 
@@ -52,6 +52,7 @@ public class OrderService {
 
         if (isInStock) {
             this.orderRepository.save(order);
+            return "Order created succesfully";
         } else {
             throw new IllegalArgumentException("Product not in the stock");
         }
@@ -62,7 +63,8 @@ public class OrderService {
             Order order = this.orderRepository.findById(String.valueOf(id)).orElse(null);
             OrderResponse response = new OrderResponse();
 
-            List<OrderLineItemsDTO> orderLineItemsDTO = order
+        assert order != null;
+        List<OrderLineItemsDTO> orderLineItemsDTO = order
                     .getOrderListItems()
                     .stream()
                     .map(this::mapToDTO)
