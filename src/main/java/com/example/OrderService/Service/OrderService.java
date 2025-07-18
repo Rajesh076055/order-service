@@ -75,11 +75,6 @@ public class OrderService {
 
     }
 
-
-    public void deleteAllOrder() {
-        this.orderRepository.deleteAll();
-    }
-
     private OrderListItem mapFromDTO(OrderLineItemsDTO orderLineItemsDTO) {
         OrderListItem orderListItem = new OrderListItem();
         orderListItem.setQuantity(orderLineItemsDTO.getQuantity());
